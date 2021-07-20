@@ -188,25 +188,34 @@ if [[ -f "{{ .pathKubeletKubeconfigReal }}" ]]; then
   fi
 fi
 
-# Apply most recent cloud-config user-data, reload the systemd daemon and restart the units to make the changes
-# effective.
-if ! diff "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD" >/dev/null || \
-   ! diff "$PATH_CCD_SCRIPT_CHECKSUM" "$PATH_CCD_SCRIPT_CHECKSUM_OLD" >/dev/null || \
-   [[ "$HYPERKUBE_IMAGE_USED_FOR_LAST_COPY_KUBELET" != "$LAST_DOWNLOADED_HYPERKUBE_IMAGE" ]] ||
-   [[ "$HYPERKUBE_IMAGE_USED_FOR_LAST_COPY_KUBECTL" != "$LAST_DOWNLOADED_HYPERKUBE_IMAGE" ]]; then
+NODE_TAINTED=$({{ .pathBinaries }}/kubectl --kubeconfig="{{ .pathKubeletKubeconfigReal }}" get node "$NODENAME" -o jsonpath={'.spec.taints[?(@.key == "deployment.machine.sapcloud.io/prefer-no-schedule")].value'})
+if [[ "$NODE_TAINTED" != "True" ]]; then
+  echo "Will apply changes as node is not tainted to noSchedule"
+else
+  echo "No changes as node is  tainted with noSchedule"
+fi
 
-  echo "Seen newer cloud config or cloud config downloader version or hyperkube image"
-  if {{ .reloadConfigCommand }}; then
-    echo "Successfully applied new cloud config version"
-    systemctl daemon-reload
-{{- range $name := .units }}
-{{- if and (ne $name $.unitNameDocker) (ne $name $.unitNameVarLibMount) (ne $name $.unitNameCloudConfigDownloader) }}
-    systemctl enable {{ $name }} && systemctl restart --no-block {{ $name }}
-{{- end }}
-{{- end }}
-    echo "Successfully restarted all units referenced in the cloud config."
-    cp "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD"
-    md5sum ${PATH_CCD_SCRIPT} > "$PATH_CCD_SCRIPT_CHECKSUM_OLD" # As the file can be updated above, get fresh checksum.
+if [[ "$NODE_TAINTED" != "True" ]]; then
+  # Apply most recent cloud-config user-data, reload the systemd daemon and restart the units to make the changes
+  # effective.
+  if ! diff "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD" >/dev/null || \
+     ! diff "$PATH_CCD_SCRIPT_CHECKSUM" "$PATH_CCD_SCRIPT_CHECKSUM_OLD" >/dev/null || \
+     [[ "$HYPERKUBE_IMAGE_USED_FOR_LAST_COPY_KUBELET" != "$LAST_DOWNLOADED_HYPERKUBE_IMAGE" ]] ||
+     [[ "$HYPERKUBE_IMAGE_USED_FOR_LAST_COPY_KUBECTL" != "$LAST_DOWNLOADED_HYPERKUBE_IMAGE" ]]; then
+
+    echo "Seen newer cloud config or cloud config downloader version or hyperkube image"
+    if {{ .reloadConfigCommand }}; then
+      echo "Successfully applied new cloud config version"
+      systemctl daemon-reload
+  {{- range $name := .units }}
+  {{- if and (ne $name $.unitNameDocker) (ne $name $.unitNameVarLibMount) (ne $name $.unitNameCloudConfigDownloader) }}
+      systemctl enable {{ $name }} && systemctl restart --no-block {{ $name }}
+  {{- end }}
+  {{- end }}
+      echo "Successfully restarted all units referenced in the cloud config."
+      cp "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD"
+      md5sum ${PATH_CCD_SCRIPT} > "$PATH_CCD_SCRIPT_CHECKSUM_OLD" # As the file can be updated above, get fresh checksum.
+    fi
   fi
 fi
 
