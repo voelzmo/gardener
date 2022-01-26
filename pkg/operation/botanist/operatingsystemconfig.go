@@ -151,7 +151,7 @@ func (b *Botanist) DeployManagedResourceForCloudConfigExecutor(ctx context.Conte
 	)
 
 	// Generate cloud-config user-data executor scripts for all worker pools.
-	for i, worker := range b.Shoot.GetInfo().Spec.Provider.Workers {
+	for _, worker := range b.Shoot.GetInfo().Spec.Provider.Workers {
 		oscData, ok := workerNameToOperatingSystemConfigMaps[worker.Name]
 		if !ok {
 			return fmt.Errorf("did not find osc data for worker pool %q", worker.Name)
@@ -171,6 +171,8 @@ func (b *Botanist) DeployManagedResourceForCloudConfigExecutor(ctx context.Conte
 		if err != nil {
 			return err
 		}
+
+		b.Shoot.Components.Extensions.OperatingSystemConfig.SetCloudConfigSecretChecksum(checksum)
 
 		cloudConfigExecutorSecretNames = append(cloudConfigExecutorSecretNames, secretName)
 		managedResourceSecretNameToData[fmt.Sprintf("shoot-cloud-config-execution-%s", worker.Name)] = data
@@ -201,7 +203,7 @@ func (b *Botanist) DeployManagedResourceForCloudConfigExecutor(ctx context.Conte
 		})
 	}
 
-	// below the secrets are reconciled with their new content. Anything we do needs to happen above
+	// TODO: (voelzmo) below the secrets are reconciled with their new content. Anything we do needs to happen above
 	if err := flow.Parallel(fns...)(ctx); err != nil {
 		return err
 	}
