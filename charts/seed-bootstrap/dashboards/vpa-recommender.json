@@ -21,8 +21,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
-  "iteration": 1648629504341,
+  "iteration": 1649248899809,
   "links": [],
   "panels": [
     {
@@ -134,10 +133,10 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": false,
-          "expr": "sum(vpa_recommender_vpa_objects_count{matches_pods=\"false\", pod=\"$vpa\"}) by (api)",
+          "expr": "sum(vpa_recommender_vpa_objects_count{matches_pods=\"false\", pod=\"$vpa\"})",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{api}} Not matching Pods",
+          "legendFormat": "Not matching Pods",
           "refId": "B"
         },
         {
@@ -146,10 +145,10 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": false,
-          "expr": "sum(vpa_recommender_vpa_objects_count{matches_pods=\"true\", pod=\"$vpa\"}) by (api)",
+          "expr": "sum(vpa_recommender_vpa_objects_count{matches_pods=\"true\", pod=\"$vpa\"})",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{api}} Matching Pods",
+          "legendFormat": "Matching Pods",
           "refId": "A"
         }
       ],
@@ -1193,5 +1192,5 @@
   "timezone": "utc",
   "title": "VPA recommender",
   "uid": "vpa",
-  "version": 4
+  "version": 5
 }
