@@ -112,7 +112,7 @@ var DefaultFeatureGate = utilfeature.DefaultMutableFeatureGate
 var AllFeatureGates = map[featuregate.Feature]featuregate.FeatureSpec{
 	HVPA:                            {Default: false, PreRelease: featuregate.Alpha},
 	HVPAForShootedSeed:              {Default: false, PreRelease: featuregate.Alpha},
-	VPAForETCD:                      {Default: false, PreRelease: featuregate.Alpha},
+	VPAForETCD:                      {Default: true, PreRelease: featuregate.Beta},
 	DefaultSeccompProfile:           {Default: false, PreRelease: featuregate.Alpha},
 	CoreDNSQueryRewriting:           {Default: true, PreRelease: featuregate.Beta},
 	IPv6SingleStack:                 {Default: false, PreRelease: featuregate.Alpha},
